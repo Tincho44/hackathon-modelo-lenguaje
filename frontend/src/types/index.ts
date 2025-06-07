@@ -27,3 +27,29 @@ export interface User {
   name: string;
   email: string;
 }
+
+// Chat types for BASF chatbot
+export interface ChatMessage {
+  id: string;
+  content: string;
+  role: "user" | "assistant";
+  timestamp: Date;
+  isTyping?: boolean;
+}
+
+export interface ChatState {
+  messages: ChatMessage[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface ChatInputProps extends BaseComponent {
+  onSendMessage: (message: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+}
+
+export interface MessageProps extends BaseComponent {
+  message: ChatMessage;
+  isLatest?: boolean;
+}
