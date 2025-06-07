@@ -1,0 +1,125 @@
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  min-height: 100vh;
+}
+
+.App-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 1rem;
+}
+
+.App-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.App-header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.App-main {
+  display: grid;
+  gap: 2rem;
+}
+
+.api-test {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 1px solid #e9ecef;
+}
+
+.api-test h2 {
+  color: #495057;
+  margin-bottom: 1.5rem;
+}
+
+.api-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #dee2e6;
+}
+
+.api-section h3 {
+  color: #6c757d;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.api-response {
+  background: #f1f3f4;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #28a745;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  overflow-x: auto;
+}
+
+.error {
+  color: #dc3545;
+  font-weight: 500;
+  padding: 0.5rem;
+  background: #f8d7da;
+  border-radius: 0.25rem;
+  border-left: 4px solid #dc3545;
+}
+
+.features {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 1px solid #e9ecef;
+}
+
+.features h2 {
+  color: #495057;
+  margin-bottom: 1.5rem;
+}
+
+.features ul {
+  list-style: none;
+  padding: 0;
+}
+
+.features li {
+  padding: 0.75rem 0;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.features li:last-child {
+  border-bottom: none;
+}
+
+/* Loading state */
+.api-section p {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .App {
+    padding: 0.5rem;
+  }
+  
+  .App-header h1 {
+    font-size: 2rem;
+  }
+  
+  .App-header p {
+    font-size: 1rem;
+  }
+}
