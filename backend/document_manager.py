@@ -112,10 +112,26 @@ class DocumentManager:
     
     def query_document(self, query, doc_name=None, streaming=True):
         """Query a specific document or all documents"""
+        print("\n=== Document Manager Query ===")
+        print(f"Received query: {query}")
+        print(f"Document name: {doc_name}")
+        print(f"Streaming: {streaming}")
+        
         try:
+            print("\nCreating QA chain...")
             qa_chain = self.create_qa_chain(doc_name, streaming)
-            return qa_chain.invoke({"query": query})
+            print("QA chain created successfully")
+            
+            print("\nInvoking QA chain...")
+            result = qa_chain.invoke({"query": query})
+            print("QA chain invoked successfully")
+            
+            print(f"\nResult: {result}")
+            return result
+            
         except Exception as e:
+            print(f"\nError in query_document: {str(e)}")
+            print(f"Error type: {type(e)}")
             return {"error": str(e)}
 
 def format_sources(source_documents):
