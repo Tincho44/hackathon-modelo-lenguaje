@@ -2,11 +2,57 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_community.chat_models import ChatOllama
+from azure.ai.inference import ChatCompletionsClient
+from azure.core.credentials import AzureKeyCredential
+from langchain.llms.base import LLM
+from typing import Any, List, Mapping, Optional
 from langchain.chains import RetrievalQA
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 import os
 import glob
+
+class AzureDeepSeekLLM(LLM):
+    """Custom LangChain LLM wrapper for Azure DeepSeek"""
+    
+    client: Any
+    
+    def __init__(self, endpoint: str, api_key: str, **kwargs):
+        super().__init__(**kwargs)
+        self.client = ChatCompletionsClient(
+            endpoint=endpoint,
+            credential=AzureKeyCredential(api_key),
+            api_version="2024-05-01-preview"
+        )
+    
+    @property
+    def _llm_type(self) -> str:
+        return "azure_deepseek"
+    
+    def _call(
+        self,
+        prompt: str,
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> str:
+        try:
+            response = self.client.complete(
+                messages=[
+                    {"role": "system", "content": "Eres un asistente especializado de BASF. Responde de manera profesional y precisa sobre química, sostenibilidad y productos de BASF."},
+                    {"role": "user", "content": prompt}
+                ],
+                model="DeepSeek-R1",  # Specify the model explicitly
+                temperature=0.7,
+                max_tokens=1000
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"Error calling Azure DeepSeek: {e}")
+            return "Lo siento, no pude procesar tu consulta en este momento."
+    
+    @property
+    def _identifying_params(self) -> Mapping[str, Any]:
+        return {"endpoint": "Azure DeepSeek"}
 
 class DocumentManager:
     _instance = None
@@ -25,14 +71,13 @@ class DocumentManager:
             self.embeddings = None
             self.initialized = True
     
-    def setup_llm(self, model_name="tinyllama", streaming=True):
-        """Initialize the LLM with specified parameters"""
+    def setup_llm(self, model_name="deepseek-chat", streaming=True):
+        """Initialize the LLM with Azure DeepSeek"""
         callbacks = [StreamingStdOutCallbackHandler()] if streaming else []
-        self.llm = ChatOllama(
-            model=model_name,
-            streaming=streaming,
-            callbacks=callbacks,
-            base_url="http://host.docker.internal:11434"  # Connect to host machine Ollama
+        self.llm = AzureDeepSeekLLM(
+            endpoint="https://ucuhackathon.services.ai.azure.com/models",
+            api_key="5DP6sQynq2A3kkwfI1CzrGRF5oql9bnkBDimRIuEIRlyuvGFHY5jJQQJ99BFACYeBjFXJ3w3AAAAACOG405s",
+            callbacks=callbacks
         )
         print(f"llm: {self.llm}")
         return self.llm
