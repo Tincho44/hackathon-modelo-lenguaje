@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from document_manager import DocumentManager, format_sources
+from config import Config
 import json
+import os
 
 app = FastAPI(
     title="My FastAPI App",
@@ -37,7 +39,36 @@ async def health_check():
 
 @app.get("/items/{item_id}")
 async def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q} 
+    return {"item_id": item_id, "q": q}
+
+@app.get("/config")
+async def get_config():
+    """Get current configuration"""
+    return {
+        "use_azure_vector_store": Config.USE_AZURE_VECTOR_STORE,
+        "azure_search_endpoint": Config.get_azure_search_endpoint(),
+        "azure_search_index": Config.AZURE_SEARCH_INDEX_NAME,
+        "embedding_model": Config.EMBEDDING_MODEL,
+        "documents_loaded": len(doc_manager.documents) if hasattr(doc_manager, 'documents') else 0
+    }
+
+@app.post("/config/toggle-azure")
+async def toggle_azure_vector_store():
+    """Toggle between Azure Vector Store and local FAISS"""
+    current = Config.USE_AZURE_VECTOR_STORE
+    new_value = not current
+    os.environ["USE_AZURE_VECTOR_STORE"] = str(new_value).lower()
+    Config.USE_AZURE_VECTOR_STORE = new_value
+    
+    # Reload documents with new configuration
+    success = doc_manager.load_documents()
+    
+    return {
+        "previous": current,
+        "current": new_value,
+        "reload_success": success,
+        "message": f"Switched to {'Azure Vector Store' if new_value else 'Local FAISS'}"
+    } 
 
 ##PRUEBA USO DE RAG HANDLER
 @app.post("/query")

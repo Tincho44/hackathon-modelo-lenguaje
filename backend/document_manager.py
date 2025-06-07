@@ -2,14 +2,17 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import AzureSearch
 from azure.ai.inference import ChatCompletionsClient
 from azure.core.credentials import AzureKeyCredential
+from azure.search.documents import SearchClient
 from langchain.llms.base import LLM
 from typing import Any, List, Mapping, Optional
 from langchain.chains import RetrievalQA
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 import os
 import glob
+from config import Config
 
 class AzureDeepSeekLLM(LLM):
     """Custom LangChain LLM wrapper for Azure DeepSeek"""
@@ -38,7 +41,7 @@ class AzureDeepSeekLLM(LLM):
         try:
             response = self.client.complete(
                 messages=[
-                    {"role": "system", "content": "Eres un asistente especializado de BASF. Responde de manera profesional y precisa sobre química, sostenibilidad y productos de BASF."},
+                    # {"role": "system", "content": "Eres un asistente especializado de BASF. Responde de manera profesional y precisa sobre química, sostenibilidad y productos de BASF."},
                     {"role": "user", "content": prompt}
                 ],
                 model="DeepSeek-R1",  # Specify the model explicitly
@@ -84,6 +87,46 @@ class DocumentManager:
     
     def load_documents(self, pdf_dir="./pdfs"):
         """Load all PDFs from a directory and create vector stores"""
+        # Initialize embeddings
+        self.embeddings = HuggingFaceEmbeddings(model_name=Config.EMBEDDING_MODEL)
+        
+        # Check if we should use Azure Vector Store
+        if Config.USE_AZURE_VECTOR_STORE:
+            return self._load_azure_vector_store()
+        else:
+            return self._load_local_documents(pdf_dir)
+    
+    def _load_azure_vector_store(self):
+        """Load documents from Azure Vector Store"""
+        try:
+            azure_search_endpoint = Config.get_azure_search_endpoint()
+            azure_search_key = Config.AZURE_SEARCH_KEY or Config.AZURE_AI_KEY
+            
+            if not azure_search_endpoint:
+                print("Azure Search endpoint not configured. Falling back to local documents.")
+                return self._load_local_documents()
+            
+            print(f"Connecting to Azure Vector Store: {azure_search_endpoint}")
+            print(f"Index name: {Config.AZURE_SEARCH_INDEX_NAME}")
+            
+            # Create Azure Search vector store
+            self.combined_vectorstore = AzureSearch(
+                azure_search_endpoint=azure_search_endpoint,
+                azure_search_key=azure_search_key,
+                index_name=Config.AZURE_SEARCH_INDEX_NAME,
+                embedding_function=self.embeddings.embed_query,
+            )
+            
+            print("Successfully connected to Azure Vector Store")
+            return True
+            
+        except Exception as e:
+            print(f"Error connecting to Azure Vector Store: {e}")
+            print("Falling back to local documents...")
+            return self._load_local_documents()
+    
+    def _load_local_documents(self, pdf_dir="./pdfs"):
+        """Load all PDFs from a directory and create local FAISS vector stores"""
         if not os.path.exists(pdf_dir):
             os.makedirs(pdf_dir)
             print(f"Created directory {pdf_dir}")
@@ -100,7 +143,6 @@ class DocumentManager:
             print(f"- {os.path.basename(pdf)}")
             
         all_docs = []
-        self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         
         for pdf_path in pdf_files:
             doc_name = os.path.basename(pdf_path)
