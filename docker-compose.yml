@@ -1,14 +1,13 @@
-version: '3.8'
+version: "3.8"
 
 services:
   fastapi-app:
-    build: .
+    build: ./backend
     ports:
       - "8000:8000"
     environment:
       - ENV=development
     volumes:
-      # Para desarrollo, monta el código para hot-reload
-      - .:/app
+      - ./backend:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-    restart: unless-stopped 
+    restart: unless-stopped
