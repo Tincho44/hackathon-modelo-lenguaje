@@ -199,9 +199,17 @@ const Chat: React.FC<ChatProps> = ({ className = "" }) => {
             </div>
             <div className="brand-claim">We create chemistry</div>
           </div>
-          <div className="chat-title">
-            <h1>BASF Assistant</h1>
-            <p>Tu experto en química y sostenibilidad</p>
+          <div className="microsoft-brand">
+            <div className="microsoft-logo">
+              <div className="microsoft-squares">
+                <div className="ms-square ms-red"></div>
+                <div className="ms-square ms-green"></div>
+                <div className="ms-square ms-blue"></div>
+                <div className="ms-square ms-yellow"></div>
+              </div>
+              <span className="microsoft-text">Microsoft</span>
+            </div>
+            <div className="hackathon-label">Hackathon Partner</div>
           </div>
         </div>
       </div>
