@@ -4,14 +4,35 @@ import type {
   ChatState,
 } from "@types";
 import React, { useEffect, useRef, useState } from "react";
+import { apiService } from "../services/api";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
 
-interface ChatProps extends BaseComponent {}
+const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
+  const getUrlParameter = (name: string): string | null => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  };
 
-const Chat: React.FC<ChatProps> = ({ className = "" }) => {
-  const [chatState, setChatState] = useState<ChatState>({
-    messages: [
+  const getInitialMessages = (): ChatMessageType[] => {
+    const contextData = getUrlParameter("data");
+
+    if (contextData) {
+      const decodedMessage = decodeURIComponent(contextData);
+      console.log("🔗 CONTEXTO DETECTADO EN URL:");
+      console.log("   Mensaje decodificado:", decodedMessage);
+
+      return [
+        {
+          id: "context-message",
+          content: decodedMessage,
+          role: "assistant",
+          timestamp: new Date(),
+        },
+      ];
+    }
+
+    return [
       {
         id: "1",
         content:
@@ -19,7 +40,11 @@ const Chat: React.FC<ChatProps> = ({ className = "" }) => {
         role: "assistant",
         timestamp: new Date(),
       },
-    ],
+    ];
+  };
+
+  const [chatState, setChatState] = useState<ChatState>({
+    messages: getInitialMessages(),
     isLoading: false,
     error: null,
   });
@@ -34,107 +59,21 @@ const Chat: React.FC<ChatProps> = ({ className = "" }) => {
     scrollToBottom();
   }, [chatState.messages]);
 
-  const generateResponse = (userMessage: string): string => {
-    const responses = {
-      // Saludos
-      greetings: [
-        "¡Hola! Me alegra poder ayudarte. Soy tu asistente especializado en BASF.",
-        "¡Bienvenido! Estoy aquí para responder tus preguntas sobre BASF y química.",
-        "¡Hola! ¿En qué aspecto de BASF te gustaría que te ayude hoy?",
-      ],
-
-      // BASF información general
-      basf: [
-        'BASF es la empresa química líder en el mundo. Nuestro propósito corporativo es "We create chemistry for a sustainable future" (Creamos química para un futuro sostenible). Combinamos el éxito económico con la protección del medio ambiente y la responsabilidad social.',
-        "BASF fue fundada en 1865 y tiene su sede en Ludwigshafen, Alemania. Operamos en más de 80 países y tenemos aproximadamente 111,000 empleados en todo el mundo.",
-        "En BASF, nos enfocamos en la química inteligente que permite un futuro más sostenible. Nuestro concepto Verbund conecta plantas de producción, cadenas de valor y tecnologías.",
-      ],
-
-      // Sostenibilidad
-      sustainability: [
-        "La sostenibilidad está en el corazón de nuestra estrategia. Trabajamos en soluciones que contribuyen a un futuro más sostenible, desde materiales para vehículos eléctricos hasta productos para agricultura sostenible.",
-        "Nuestro objetivo es lograr emisiones netas cero para 2050. Estamos invirtiendo en tecnologías innovadoras como la producción de hidrógeno verde y procesos de fabricación con bajas emisiones de CO2.",
-        "BASF desarrolla productos que ayudan a nuestros clientes a ser más sostenibles. Por ejemplo, nuestros catalizadores para automóviles reducen las emisiones y nuestros materiales de construcción mejoran la eficiencia energética.",
-      ],
-
-      // Productos
-      products: [
-        "BASF produce una amplia gama de productos: químicos, materiales de rendimiento, soluciones industriales, tecnologías de superficie, nutrición y cuidado, y soluciones agrícolas.",
-        "Nuestros productos van desde químicos básicos hasta soluciones especializadas para industrias como automotriz, construcción, agricultura, cuidado personal y farmacéutica.",
-        "Algunos de nuestros productos más conocidos incluyen catalizadores, espumas, recubrimientos, productos para cuidado del hogar y soluciones para protección de cultivos.",
-      ],
-
-      // Innovación
-      innovation: [
-        "La innovación es clave para BASF. Invertimos aproximadamente €2 mil millones anuales en investigación y desarrollo, trabajando en más de 3,000 proyectos de I+D.",
-        "Nuestros centros de innovación están distribuidos globalmente, colaborando con universidades, startups y otros socios para desarrollar soluciones del futuro.",
-        "Estamos trabajando en tecnologías revolucionarias como baterías para vehículos eléctricos, procesos de producción digitalizados y nuevos materiales sostenibles.",
-      ],
-
-      // Default
-      default: [
-        "Esa es una excelente pregunta sobre BASF. Te recomiendo visitar nuestro sitio web oficial para obtener información más detallada y actualizada.",
-        "Como empresa química líder, BASF tiene muchos aspectos fascinantes. ¿Te gustaría saber más sobre algún área específica como sostenibilidad, productos o innovación?",
-        "BASF es una empresa muy diversa. ¿Hay algún sector o producto específico de BASF sobre el que te gustaría aprender más?",
-      ],
-    };
-
-    const message = userMessage.toLowerCase();
-
-    if (
-      message.includes("hola") ||
-      message.includes("hi") ||
-      message.includes("hello")
-    ) {
-      return responses.greetings[
-        Math.floor(Math.random() * responses.greetings.length)
-      ];
+  // Effect to clean URL after loading context
+  useEffect(() => {
+    const contextData = getUrlParameter("data");
+    if (contextData) {
+      // Clean the URL by removing the data parameter
+      const url = new URL(window.location.href);
+      url.searchParams.delete("data");
+      window.history.replaceState(
+        {},
+        document.title,
+        url.pathname + url.search
+      );
+      console.log("🔗 URL limpiada después de cargar contexto");
     }
-
-    if (
-      message.includes("basf") ||
-      message.includes("empresa") ||
-      message.includes("compañía")
-    ) {
-      return responses.basf[Math.floor(Math.random() * responses.basf.length)];
-    }
-
-    if (
-      message.includes("sostenib") ||
-      message.includes("medio ambiente") ||
-      message.includes("verde") ||
-      message.includes("co2")
-    ) {
-      return responses.sustainability[
-        Math.floor(Math.random() * responses.sustainability.length)
-      ];
-    }
-
-    if (
-      message.includes("producto") ||
-      message.includes("químico") ||
-      message.includes("material")
-    ) {
-      return responses.products[
-        Math.floor(Math.random() * responses.products.length)
-      ];
-    }
-
-    if (
-      message.includes("innovac") ||
-      message.includes("investigac") ||
-      message.includes("tecnolog") ||
-      message.includes("futuro")
-    ) {
-      return responses.innovation[
-        Math.floor(Math.random() * responses.innovation.length)
-      ];
-    }
-
-    return responses.default[
-      Math.floor(Math.random() * responses.default.length)
-    ];
-  };
+  }, []);
 
   const handleSendMessage = async (content: string) => {
     // Add user message
@@ -165,12 +104,18 @@ const Chat: React.FC<ChatProps> = ({ className = "" }) => {
       messages: [...prev.messages, typingMessage],
     }));
 
-    // Simulate API delay
-    setTimeout(() => {
-      const response = generateResponse(content);
+    try {
+      console.log("🤖 Enviando consulta al LLM:", content);
+
+      // Call real LLM API
+      const response = await apiService.queryLLM(content);
+
+      console.log("✅ Respuesta del LLM recibida:", response);
+      console.log("🔗 URL de contexto generada:", response.context_url);
+
       const assistantMessage: ChatMessageType = {
         id: (Date.now() + 1).toString(),
-        content: response,
+        content: response.answer,
         role: "assistant",
         timestamp: new Date(),
       };
@@ -181,8 +126,28 @@ const Chat: React.FC<ChatProps> = ({ className = "" }) => {
           .filter((m) => m.id !== "typing")
           .concat(assistantMessage),
         isLoading: false,
+        error: null,
       }));
-    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
+    } catch (error) {
+      console.error("❌ Error al consultar el LLM:", error);
+
+      const errorMessage: ChatMessageType = {
+        id: (Date.now() + 1).toString(),
+        content:
+          "Lo siento, ha ocurrido un error al procesar tu consulta. Por favor, inténtalo de nuevo.",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+
+      setChatState((prev) => ({
+        ...prev,
+        messages: prev.messages
+          .filter((m) => m.id !== "typing")
+          .concat(errorMessage),
+        isLoading: false,
+        error: "Error al conectar con el LLM",
+      }));
+    }
   };
 
   return (

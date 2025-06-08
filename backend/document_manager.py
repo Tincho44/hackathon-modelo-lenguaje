@@ -25,7 +25,7 @@ class DocumentManager:
             self.embeddings = None
             self.initialized = True
     
-    def setup_llm(self, model_name="tinyllama", streaming=True):
+    def setup_llm(self, model_name="llama3:8b", streaming=True):
         """Initialize the LLM with specified parameters"""
         callbacks = [StreamingStdOutCallbackHandler()] if streaming else []
         self.llm = ChatOllama(

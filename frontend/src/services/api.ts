@@ -46,6 +46,24 @@ class ApiService {
     const params = q ? `?q=${encodeURIComponent(q)}` : "";
     return this.request<Item>(`/items/${itemId}${params}`);
   }
+
+  // Query LLM
+  async queryLLM(
+    text: string,
+    documentName?: string
+  ): Promise<{
+    answer: string;
+    sources: any[];
+    context_url: string;
+  }> {
+    return this.request("/query", {
+      method: "POST",
+      body: JSON.stringify({
+        text,
+        document_name: documentName,
+      }),
+    });
+  }
 }
 
 export const apiService = new ApiService();
