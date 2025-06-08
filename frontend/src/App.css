@@ -87,6 +87,50 @@ body {
   width: 100%;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Floating Download Report Button */
+.floating-download-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: var(--basf-dark-blue);
+  color: var(--basf-white);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0, 74, 150, 0.3);
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.floating-download-btn:hover:not(:disabled) {
+  background: var(--basf-light-blue);
+  box-shadow: 0 4px 16px rgba(0, 74, 150, 0.4);
+}
+
+.floating-download-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #cccccc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.floating-download-btn svg {
+  flex-shrink: 0;
+}
+
+
+
 .basf-brand {
   display: flex;
   align-items: center;
@@ -586,6 +630,17 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+  
+  .header-actions {
+    justify-content: flex-end;
+  }
+  
+  .floating-download-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
   }
   
   .microsoft-brand {

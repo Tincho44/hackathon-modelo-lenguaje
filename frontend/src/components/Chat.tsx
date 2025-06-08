@@ -75,6 +75,46 @@ const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
     }
   }, []);
 
+  const handleDownloadReport = async () => {
+    try {
+      console.log("📄 Generating report for conversation...");
+
+      // Prepare conversation data
+      const conversationData = {
+        messages: chatState.messages.filter((msg) => !msg.isTyping), // Exclude typing indicators
+        timestamp: new Date().toISOString(),
+      };
+
+      // Generate and download PDF
+      const pdfBlob = await apiService.generateReport(conversationData);
+
+      // Create download link
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Generate filename with timestamp
+      const timestamp = new Date()
+        .toLocaleString("es-ES")
+        .replace(/[/,:]/g, "-")
+        .replace(/\s/g, "_");
+      link.download = `BASF_Reporte_Incidente_${timestamp}.pdf`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log("✅ Report downloaded successfully");
+    } catch (error) {
+      console.error("❌ Error downloading report:", error);
+      // You could add a toast notification here
+    }
+  };
+
   const handleSendMessage = async (content: string) => {
     // Add user message
     const userMessage: ChatMessageType = {
@@ -184,17 +224,19 @@ const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
             </div>
             <div className="brand-claim">We create chemistry</div>
           </div>
-          <div className="microsoft-brand">
-            <div className="microsoft-logo">
-              <div className="microsoft-squares">
-                <div className="ms-square ms-red"></div>
-                <div className="ms-square ms-green"></div>
-                <div className="ms-square ms-blue"></div>
-                <div className="ms-square ms-yellow"></div>
+          <div className="header-actions">
+            <div className="microsoft-brand">
+              <div className="microsoft-logo">
+                <div className="microsoft-squares">
+                  <div className="ms-square ms-red"></div>
+                  <div className="ms-square ms-green"></div>
+                  <div className="ms-square ms-blue"></div>
+                  <div className="ms-square ms-yellow"></div>
+                </div>
+                <span className="microsoft-text">Microsoft</span>
               </div>
-              <span className="microsoft-text">Microsoft</span>
+              <div className="hackathon-label">Hackathon Partner</div>
             </div>
-            <div className="hackathon-label">Hackathon Partner</div>
           </div>
         </div>
       </div>
@@ -215,6 +257,25 @@ const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
         disabled={chatState.isLoading}
         placeholder=""
       />
+
+      {/* Floating Download Report Button */}
+      <button
+        onClick={handleDownloadReport}
+        className="floating-download-btn"
+        title="Descargar reporte PDF"
+        disabled={chatState.messages.length <= 1}
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M12 15L7 10H11V3H13V10H17L12 15Z" fill="currentColor" />
+          <path d="M20 18H4V20H20V18Z" fill="currentColor" />
+        </svg>
+      </button>
     </div>
   );
 };

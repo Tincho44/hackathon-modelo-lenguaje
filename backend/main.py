@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from document_manager import DocumentManager, format_sources
+from report_generator import ReportGenerator
 import json
 import os
 import mail_sender
@@ -33,13 +35,7 @@ def generate_context_url(message: str) -> str:
     context_url = f"http://localhost:{FRONTEND_PORT}?data={encoded_message}"
     return context_url
 
-def truncate_response(text: str, max_words: int = 50) -> str:
-    """Truncate response to maximum number of words"""
-    words = text.split()
-    if len(words) > max_words:
-        truncated = ' '.join(words[:max_words])
-        return f"{truncated}... [Respuesta truncada. Ver completa en chatbot]"
-    return text
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -103,18 +99,14 @@ async def query_documents(request: Request):
         answer_text = str(result["result"])
         context_url = generate_context_url(answer_text)
         
-        # Truncate response for better UX 
-        truncated_answer = truncate_response(answer_text, max_words=40)
-        
         print(f"\n🔗 GENERANDO URL DE CONTEXTO:")
-        print(f"   Respuesta original: {len(answer_text.split())} palabras")
-        print(f"   Respuesta truncada: {len(truncated_answer.split())} palabras")
+        print(f"   Respuesta completa: {len(answer_text.split())} palabras")
         print(f"   URL generada: {context_url}")
         print(f"   Puerto frontend: {FRONTEND_PORT}")
         
-        # Prepare response with truncated answer
+        # Prepare response with full answer
         response = {
-            "answer": truncated_answer,
+            "answer": answer_text,
             "sources": format_sources(result["source_documents"]),
             "context_url": context_url
         }
@@ -141,3 +133,48 @@ async def query_documents(request: Request):
     except Exception as e:
         print(f"\nError processing request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/generate-report")
+async def generate_report(request: Request):
+    """Generate a PDF report from conversation data"""
+    try:
+        # Get conversation data
+        data = await request.json()
+        print("\n=== Generate Report Request ===")
+        print(f"Received data keys: {list(data.keys())}")
+        
+        if "conversation" not in data:
+            raise HTTPException(status_code=400, detail="'conversation' field is required")
+        
+        conversation_data = data["conversation"]
+        print(f"Conversation messages count: {len(conversation_data.get('messages', []))}")
+        
+        # Generate PDF report
+        report_generator = ReportGenerator()
+        pdf_data = report_generator.generate_conversation_report(conversation_data)
+        
+        # Generate filename with timestamp
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"BASF_Reporte_Incidente_{timestamp}.pdf"
+        
+        print(f"✅ PDF generated successfully: {filename}")
+        print(f"PDF size: {len(pdf_data)} bytes")
+        
+        # Return PDF as response
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Length": str(len(pdf_data))
+            }
+        )
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in request body")
+    except Exception as e:
+        print(f"\nError generating report: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to generate report: {str(e)}")
