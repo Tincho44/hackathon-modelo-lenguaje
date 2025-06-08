@@ -51,20 +51,38 @@ class ApiService {
   async queryLLM(
     text: string,
     documentName?: string,
-    temperature: number = 0.3, // Default: cold/deterministic
+    temperature: number = 0.1 // Default: very cold/deterministic
   ): Promise<{
     answer: string;
     sources: any[];
     context_url: string;
   }> {
-    return this.request("/query", {
-      method: "POST",
-      body: JSON.stringify({
-        text,
-        document_name: documentName,
-        temperature,
-      }),
-    });
+    console.log(
+      "🔍 API Service - Sending query:",
+      text.substring(0, 100) + "..."
+    );
+    console.log("🌡️ Temperature:", temperature);
+
+    try {
+      const result = await this.request<{
+        answer: string;
+        sources: any[];
+        context_url: string;
+      }>("/query", {
+        method: "POST",
+        body: JSON.stringify({
+          text,
+          document_name: documentName,
+          temperature,
+        }),
+      });
+
+      console.log("✅ API Service - Response received:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ API Service - Error:", error);
+      throw error;
+    }
   }
 }
 

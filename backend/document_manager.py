@@ -26,7 +26,7 @@ class DocumentManager:
             self.embeddings = None
             self.initialized = True
     
-    def setup_llm(self, model_name="llama3:8b", streaming=True, temperature=0.2):
+    def setup_llm(self, model_name="llama3:8b", streaming=True, temperature=0.1):
         """Initialize the LLM with specified parameters"""
         callbacks = [StreamingStdOutCallbackHandler()] if streaming else []
         self.llm = ChatOllama(
@@ -71,7 +71,7 @@ class DocumentManager:
             for doc in docs:
                 doc.metadata["source_file"] = doc_name
             
-            splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+            splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=30)
             chunks = splitter.split_documents(docs)
             
             # Store individual document vectorstore
@@ -98,32 +98,29 @@ class DocumentManager:
     
     def create_basf_engineer_prompt(self):
         """Create a custom prompt for BASF chemical engineer persona"""
-        template = """Eres un ingeniero químico experimentado de BASF, una de las empresas químicas más grandes del mundo. 
-Tu especialidad incluye procesos químicos, desarrollo de productos, investigación y desarrollo, y soluciones industriales.
+        template = """Eres un ingeniero químico experimentado de BASF especializado en alertas de incidentes y respuestas rápidas.
 
-Características de tu personalidad y conocimiento:
-- Hablas español de manera natural, profesional y concisa
-- Tienes amplio conocimiento en ingeniería química, procesos industriales, materiales y química aplicada
-- Trabajas en BASF y conoces los productos, servicios y tecnologías de la empresa
-- Eres práctico, analítico y te enfocas en soluciones técnicas
-- Puedes explicar conceptos complejos de manera clara y accesible
-- Siempre mantienes un enfoque en la seguridad, sostenibilidad y eficiencia
+INSTRUCCIONES CRÍTICAS:
+- Responde en MÁXIMO 3-4 frases cortas
+- Sé directo, conciso y específico
+- Enfócate solo en lo más importante y urgente
+- Usa viñetas si es necesario para claridad
+- No agregues información de contexto innecesaria
 
-Contexto de documentos disponibles:
+Contexto de documentos:
 {context}
 
-Pregunta del usuario:
+Alerta/Pregunta:
 {question}
 
-Responde como un ingeniero químico de BASF, utilizando tu expertise técnico y los documentos proporcionados cuando sean relevantes. 
-Sé conversacional pero profesional, y explica los conceptos técnicos de manera clara."""
+Respuesta breve y específica como ingeniero de BASF:"""
 
         return PromptTemplate(
             template=template,
             input_variables=["context", "question"]
         )
     
-    def create_qa_chain(self, doc_name=None, streaming=True, temperature=0.2):
+    def create_qa_chain(self, doc_name=None, streaming=True, temperature=0.1):
         """Create a QA chain for a specific document or all documents"""
         if self.llm is None:
             self.setup_llm(streaming=streaming, temperature=temperature)
@@ -137,13 +134,13 @@ Sé conversacional pero profesional, y explica los conceptos técnicos de manera
             
         return RetrievalQA.from_chain_type(
             llm=self.llm,
-            retriever=vectorstore.as_retriever(search_kwargs={"k": 3}),
+            retriever=vectorstore.as_retriever(search_kwargs={"k": 2}),
             chain_type="stuff",
             return_source_documents=True,
             chain_type_kwargs={"prompt": custom_prompt}
         )
     
-    def query_document(self, query, doc_name=None, streaming=True, temperature=0.2):
+    def query_document(self, query, doc_name=None, streaming=True, temperature=0.1):
         """Query a specific document or all documents"""
         print("\n=== Document Manager Query ===")
         print(f"Received query: {query}")

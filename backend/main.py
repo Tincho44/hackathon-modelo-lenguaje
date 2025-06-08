@@ -33,6 +33,14 @@ def generate_context_url(message: str) -> str:
     context_url = f"http://localhost:{FRONTEND_PORT}?data={encoded_message}"
     return context_url
 
+def truncate_response(text: str, max_words: int = 50) -> str:
+    """Truncate response to maximum number of words"""
+    words = text.split()
+    if len(words) > max_words:
+        truncated = ' '.join(words[:max_words])
+        return f"{truncated}... [Respuesta truncada. Ver completa en chatbot]"
+    return text
+
 @app.on_event("startup")
 async def startup_event():
     """Load documents when the API starts"""
@@ -70,7 +78,7 @@ async def query_documents(request: Request):
         
         query_text = str(data["text"])
         doc_name = data.get("document_name")
-        temperature = data.get("temperature", 0.3)  # Default: cold/deterministic
+        temperature = data.get("temperature", 0.1)  # Default: very cold/deterministic
 
         if not query_text.strip():
             raise HTTPException(status_code=400, detail="'text' field cannot be empty")
@@ -91,25 +99,34 @@ async def query_documents(request: Request):
         if "error" in result:
             raise HTTPException(status_code=400, detail=result["error"])
 
-        # Generate context URL
+        # Generate context URL with full response
         answer_text = str(result["result"])
         context_url = generate_context_url(answer_text)
         
+        # Truncate response for better UX 
+        truncated_answer = truncate_response(answer_text, max_words=40)
+        
         print(f"\n🔗 GENERANDO URL DE CONTEXTO:")
-        print(f"   Mensaje original: {answer_text[:100]}{'...' if len(answer_text) > 100 else ''}")
+        print(f"   Respuesta original: {len(answer_text.split())} palabras")
+        print(f"   Respuesta truncada: {len(truncated_answer.split())} palabras")
         print(f"   URL generada: {context_url}")
         print(f"   Puerto frontend: {FRONTEND_PORT}")
         
-        # Prepare response
+        # Prepare response with truncated answer
         response = {
-            "answer": answer_text,
+            "answer": truncated_answer,
             "sources": format_sources(result["source_documents"]),
             "context_url": context_url
         }
-        mail_res = mail_sender.enviar_correo(response.get)
-        print(f"Email sent successfully: {mail_res}")
-        if not mail_res:
-            raise HTTPException(status_code=500, detail="Failed to send email")
+        
+        # Only send email for alert/incident scenarios (when answer contains "Alerta" or "Protocolo")
+        if "alerta" in answer_text.lower() or "protocolo" in answer_text.lower() or "emergencia" in answer_text.lower():
+            print("🚨 Detectada alerta/protocolo de emergencia - Enviando email")
+            mail_res = mail_sender.enviar_correo(query_text, context_url)
+            print(f"Email sent successfully: {mail_res}")
+        else:
+            print("💬 Consulta normal - No se envía email")
+            mail_res = True  # No error for normal queries
         print("\n=== Processed Query ===")
 
         print("\n=== Response Data ===")

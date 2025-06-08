@@ -369,6 +369,81 @@ body {
   line-height: 1.5;
 }
 
+/* Formatted message content */
+.formatted-content {
+  line-height: 1.6;
+}
+
+.formatted-content .content-section {
+  margin-bottom: 1rem;
+}
+
+.formatted-content .content-section:last-child {
+  margin-bottom: 0;
+}
+
+.formatted-content .message-line {
+  margin-bottom: 0.5rem;
+}
+
+.formatted-content .message-line:last-child {
+  margin-bottom: 0;
+}
+
+.formatted-content .alert-header {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: var(--basf-red);
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(197, 0, 34, 0.1);
+  border-left: 4px solid var(--basf-red);
+  border-radius: 4px;
+}
+
+.formatted-content .numbered-item {
+  display: flex;
+  margin-bottom: 0.6rem;
+  align-items: flex-start;
+}
+
+.formatted-content .numbered-item .number {
+  font-weight: bold;
+  color: var(--basf-dark-blue);
+  min-width: 2rem;
+  flex-shrink: 0;
+}
+
+.formatted-content .numbered-item .content {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.formatted-content .numbered-item .item-title {
+  font-weight: 600;
+  color: var(--basf-dark-blue);
+  margin-bottom: 0.25rem;
+}
+
+.formatted-content .numbered-item .item-description {
+  color: var(--basf-gray-dark);
+  font-size: 0.95em;
+}
+
+.formatted-content .bold-text {
+  font-weight: 600;
+  color: var(--basf-dark-blue);
+}
+
+/* Special styling for recommendations */
+.formatted-content .message-line:has(.bold-text) {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(0, 74, 150, 0.08);
+  border-radius: 4px;
+  border-left: 3px solid var(--basf-dark-blue);
+}
+
 /* Typing Indicator */
 .typing-indicator {
   padding: 0.5rem 0;
