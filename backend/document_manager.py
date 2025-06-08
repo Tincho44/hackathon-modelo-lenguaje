@@ -5,6 +5,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.chat_models import ChatOllama
 from langchain.chains import RetrievalQA
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain.prompts import PromptTemplate
 import os
 import glob
 
@@ -25,16 +26,17 @@ class DocumentManager:
             self.embeddings = None
             self.initialized = True
     
-    def setup_llm(self, model_name="llama3:8b", streaming=True):
+    def setup_llm(self, model_name="llama3:8b", streaming=True, temperature=0.2):
         """Initialize the LLM with specified parameters"""
         callbacks = [StreamingStdOutCallbackHandler()] if streaming else []
         self.llm = ChatOllama(
             model=model_name,
             streaming=streaming,
             callbacks=callbacks,
-            base_url="http://host.docker.internal:11434"  # Connect to host machine Ollama
+            base_url="http://host.docker.internal:11434",  # Connect to host machine Ollama
+            temperature=temperature,  # Lower = more deterministic/cold
         )
-        print(f"llm: {self.llm}")
+        print(f"LLM initialized - Model: {model_name}, Temperature: {temperature}")
         return self.llm
     
     def load_documents(self, pdf_dir="./pdfs"):
@@ -94,32 +96,64 @@ class DocumentManager:
             return self.combined_vectorstore
         return self.documents.get(doc_name)
     
-    def create_qa_chain(self, doc_name=None, streaming=True):
+    def create_basf_engineer_prompt(self):
+        """Create a custom prompt for BASF chemical engineer persona"""
+        template = """Eres un ingeniero químico experimentado de BASF, una de las empresas químicas más grandes del mundo. 
+Tu especialidad incluye procesos químicos, desarrollo de productos, investigación y desarrollo, y soluciones industriales.
+
+Características de tu personalidad y conocimiento:
+- Hablas español de manera natural, profesional y concisa
+- Tienes amplio conocimiento en ingeniería química, procesos industriales, materiales y química aplicada
+- Trabajas en BASF y conoces los productos, servicios y tecnologías de la empresa
+- Eres práctico, analítico y te enfocas en soluciones técnicas
+- Puedes explicar conceptos complejos de manera clara y accesible
+- Siempre mantienes un enfoque en la seguridad, sostenibilidad y eficiencia
+
+Contexto de documentos disponibles:
+{context}
+
+Pregunta del usuario:
+{question}
+
+Responde como un ingeniero químico de BASF, utilizando tu expertise técnico y los documentos proporcionados cuando sean relevantes. 
+Sé conversacional pero profesional, y explica los conceptos técnicos de manera clara."""
+
+        return PromptTemplate(
+            template=template,
+            input_variables=["context", "question"]
+        )
+    
+    def create_qa_chain(self, doc_name=None, streaming=True, temperature=0.2):
         """Create a QA chain for a specific document or all documents"""
         if self.llm is None:
-            self.setup_llm(streaming=streaming)
+            self.setup_llm(streaming=streaming, temperature=temperature)
             
         vectorstore = self.get_vectorstore(doc_name)
         if vectorstore is None:
             raise ValueError(f"Document '{doc_name}' not found")
+        
+        # Create custom prompt for BASF engineer persona
+        custom_prompt = self.create_basf_engineer_prompt()
             
         return RetrievalQA.from_chain_type(
             llm=self.llm,
             retriever=vectorstore.as_retriever(search_kwargs={"k": 3}),
             chain_type="stuff",
-            return_source_documents=True
+            return_source_documents=True,
+            chain_type_kwargs={"prompt": custom_prompt}
         )
     
-    def query_document(self, query, doc_name=None, streaming=True):
+    def query_document(self, query, doc_name=None, streaming=True, temperature=0.2):
         """Query a specific document or all documents"""
         print("\n=== Document Manager Query ===")
         print(f"Received query: {query}")
         print(f"Document name: {doc_name}")
         print(f"Streaming: {streaming}")
+        print(f"Temperature: {temperature}")
         
         try:
             print("\nCreating QA chain...")
-            qa_chain = self.create_qa_chain(doc_name, streaming)
+            qa_chain = self.create_qa_chain(doc_name, streaming, temperature)
             print("QA chain created successfully")
             
             print("\nInvoking QA chain...")

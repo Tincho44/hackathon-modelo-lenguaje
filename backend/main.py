@@ -70,6 +70,7 @@ async def query_documents(request: Request):
         
         query_text = str(data["text"])
         doc_name = data.get("document_name")
+        temperature = data.get("temperature", 0.3)  # Default: cold/deterministic
 
         if not query_text.strip():
             raise HTTPException(status_code=400, detail="'text' field cannot be empty")
@@ -77,12 +78,14 @@ async def query_documents(request: Request):
         print(f"\nProcessing query:")
         print(f"text: {query_text}")
         print(f"document_name: {doc_name}")
+        print(f"temperature: {temperature}")
 
         # Query the document
         result = doc_manager.query_document(
             query=query_text,
             doc_name=doc_name,
-            streaming=False
+            streaming=False,
+            temperature=temperature,
         )
 
         if "error" in result:

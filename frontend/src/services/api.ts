@@ -50,7 +50,8 @@ class ApiService {
   // Query LLM
   async queryLLM(
     text: string,
-    documentName?: string
+    documentName?: string,
+    temperature: number = 0.3, // Default: cold/deterministic
   ): Promise<{
     answer: string;
     sources: any[];
@@ -61,6 +62,7 @@ class ApiService {
       body: JSON.stringify({
         text,
         document_name: documentName,
+        temperature,
       }),
     });
   }

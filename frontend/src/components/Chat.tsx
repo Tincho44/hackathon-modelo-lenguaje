@@ -107,8 +107,12 @@ const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
     try {
       console.log("🤖 Enviando consulta al LLM:", content);
 
-      // Call real LLM API
-      const response = await apiService.queryLLM(content);
+      // Call real LLM API with cold/concise parameters
+      const response = await apiService.queryLLM(
+        content,
+        undefined, // document_name
+        0.3, // temperature: cold (0.0-1.0, lower = more deterministic)
+      );
 
       console.log("✅ Respuesta del LLM recibida:", response);
       console.log("🔗 URL de contexto generada:", response.context_url);
