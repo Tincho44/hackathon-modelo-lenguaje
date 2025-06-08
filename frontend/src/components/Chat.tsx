@@ -106,16 +106,32 @@ const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
 
     try {
       console.log("🤖 Enviando consulta al LLM:", content);
+      console.log("⏰ Timestamp:", new Date().toISOString());
 
-      // Call real LLM API with cold/concise parameters
-      const response = await apiService.queryLLM(
+      // Call real LLM API with very cold/concise parameters with timeout
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Request timeout after 30 seconds")),
+          30000
+        )
+      );
+
+      const apiPromise = apiService.queryLLM(
         content,
         undefined, // document_name
-        0.3, // temperature: cold (0.0-1.0, lower = more deterministic)
+        0.1 // temperature: very cold (0.0-1.0, lower = more deterministic)
       );
+
+      console.log("🔄 Waiting for LLM response...");
+      const response = (await Promise.race([apiPromise, timeoutPromise])) as {
+        answer: string;
+        sources: any[];
+        context_url: string;
+      };
 
       console.log("✅ Respuesta del LLM recibida:", response);
       console.log("🔗 URL de contexto generada:", response.context_url);
+      console.log("⏰ Response timestamp:", new Date().toISOString());
 
       const assistantMessage: ChatMessageType = {
         id: (Date.now() + 1).toString(),
