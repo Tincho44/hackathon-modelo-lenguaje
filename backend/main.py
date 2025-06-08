@@ -4,6 +4,7 @@ from document_manager import DocumentManager, format_sources
 import json
 import os
 import mail_sender
+import urllib.parse
 
 app = FastAPI(
     title="My FastAPI App",
@@ -22,6 +23,15 @@ app.add_middleware(
 
 # Initialize document manager
 doc_manager = DocumentManager()
+
+# Configuration
+FRONTEND_PORT = 3000
+
+def generate_context_url(message: str) -> str:
+    """Generate a URL with the LLM response encoded as a parameter"""
+    encoded_message = urllib.parse.quote(message)
+    context_url = f"http://localhost:{FRONTEND_PORT}?data={encoded_message}"
+    return context_url
 
 @app.on_event("startup")
 async def startup_event():
@@ -60,6 +70,7 @@ async def query_documents(request: Request):
         
         query_text = str(data["text"])
         doc_name = data.get("document_name")
+        temperature = data.get("temperature", 0.3)  # Default: cold/deterministic
 
         if not query_text.strip():
             raise HTTPException(status_code=400, detail="'text' field cannot be empty")
@@ -67,21 +78,33 @@ async def query_documents(request: Request):
         print(f"\nProcessing query:")
         print(f"text: {query_text}")
         print(f"document_name: {doc_name}")
+        print(f"temperature: {temperature}")
 
         # Query the document
         result = doc_manager.query_document(
             query=query_text,
             doc_name=doc_name,
-            streaming=False
+            streaming=False,
+            temperature=temperature,
         )
 
         if "error" in result:
             raise HTTPException(status_code=400, detail=result["error"])
 
+        # Generate context URL
+        answer_text = str(result["result"])
+        context_url = generate_context_url(answer_text)
+        
+        print(f"\n🔗 GENERANDO URL DE CONTEXTO:")
+        print(f"   Mensaje original: {answer_text[:100]}{'...' if len(answer_text) > 100 else ''}")
+        print(f"   URL generada: {context_url}")
+        print(f"   Puerto frontend: {FRONTEND_PORT}")
+        
         # Prepare response
         response = {
-            "answer": str(result["result"]),
-            "sources": format_sources(result["source_documents"])
+            "answer": answer_text,
+            "sources": format_sources(result["source_documents"]),
+            "context_url": context_url
         }
         mail_res = mail_sender.enviar_correo(response.get)
         print(f"Email sent successfully: {mail_res}")
@@ -91,6 +114,8 @@ async def query_documents(request: Request):
 
         print("\n=== Response Data ===")
         print(json.dumps(response, indent=2))
+        print(f"\n=== Context URL Generated ===")
+        print(f"URL: {context_url}")
         
         return response
 
