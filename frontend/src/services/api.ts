@@ -84,6 +84,36 @@ class ApiService {
       throw error;
     }
   }
+
+  // Generate PDF Report
+  async generateReport(conversationData: any): Promise<Blob> {
+    console.log(
+      "📄 API Service - Generating report for conversation:",
+      conversationData
+    );
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/generate-report`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversation: conversationData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      console.log("✅ PDF generated successfully");
+      return await response.blob();
+    } catch (error) {
+      console.error("❌ Error generating report:", error);
+      throw error;
+    }
+  }
 }
 
 export const apiService = new ApiService();
