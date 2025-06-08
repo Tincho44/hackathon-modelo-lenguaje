@@ -83,6 +83,11 @@ async def query_documents(request: Request):
             "answer": str(result["result"]),
             "sources": format_sources(result["source_documents"])
         }
+        mail_res = mail_sender.enviar_correo(response.get)
+        print(f"Email sent successfully: {mail_res}")
+        if not mail_res:
+            raise HTTPException(status_code=500, detail="Failed to send email")
+        print("\n=== Processed Query ===")
 
         print("\n=== Response Data ===")
         print(json.dumps(response, indent=2))
@@ -93,44 +98,4 @@ async def query_documents(request: Request):
         raise HTTPException(status_code=400, detail="Invalid JSON in request body")
     except Exception as e:
         print(f"\nError processing request: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/send-email")
-async def send_email(request: Request):
-    """Send email"""
-    try:
-        data = await request.json()
-        print(data)
-        print("\n=== Raw Request Data ===")
-        print(json.dumps(data, indent=2))
-        
-        if not isinstance(data, dict):
-            raise HTTPException(status_code=400, detail="Request body must be a JSON object")
-        
-        if "to_email" not in data:
-            raise HTTPException(status_code=400, detail="'to_email' field is required")
-        
-        if "subject" not in data:
-            raise HTTPException(status_code=400, detail="'subject' field is required")
-        
-        if "body" not in data:
-            raise HTTPException(status_code=400, detail="'body' field is required")
-
-        to_email = data["to_email"]
-        subject = data["subject"]
-        body = data["body"]
-    
-        success = mail_sender.enviar_correo(
-            destinatario=to_email,
-            asunto=subject,
-            cuerpo=body,
-        )
-        # print(f"Clave: {os.environ.get("EMAIL_SENDER_PASSWORD")}")
-        
-        return {
-            "success": success,
-            "message": "Email sent successfully" if success else "Failed to send email"
-        }
-    except Exception as e:
-        print(f"\nError sending email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
