@@ -35,8 +35,9 @@ class DocumentManager:
             callbacks=callbacks,
             base_url="http://host.docker.internal:11434",  # Connect to host machine Ollama
             temperature=temperature,  # Lower = more deterministic/cold
+            system="Eres un asistente que SIEMPRE responde en español. Sin importar el idioma de entrada, tu respuesta debe estar completamente en español. Eres un ingeniero químico de BASF especializado en seguridad industrial y alertas de incidentes."
         )
-        print(f"LLM initialized - Model: {model_name}, Temperature: {temperature}")
+        print(f"LLM initialized - Model: {model_name}, Temperature: {temperature}, Language: Español")
         return self.llm
     
     def load_documents(self, pdf_dir="./pdfs"):
@@ -101,11 +102,13 @@ class DocumentManager:
         template = """Eres un ingeniero químico experimentado de BASF especializado en alertas de incidentes y respuestas rápidas.
 
 INSTRUCCIONES CRÍTICAS:
+- SIEMPRE responde en ESPAÑOL, sin excepción
 - Responde en MÁXIMO 3-4 frases cortas
 - Sé directo, conciso y específico
 - Enfócate solo en lo más importante y urgente
 - Usa viñetas si es necesario para claridad
 - No agregues información de contexto innecesaria
+- Independientemente del idioma de la pregunta, tu respuesta debe ser en español
 
 Contexto de documentos:
 {context}
@@ -113,7 +116,7 @@ Contexto de documentos:
 Alerta/Pregunta:
 {question}
 
-Respuesta breve y específica como ingeniero de BASF:"""
+Respuesta breve y específica como ingeniero de BASF (en español):"""
 
         return PromptTemplate(
             template=template,
