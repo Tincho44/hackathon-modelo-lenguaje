@@ -3,6 +3,7 @@ from email.message import EmailMessage
 
 def enviar_correo(destinatario, asunto, cuerpo):
     try:
+        remitente='lucasalegre13@gmail.com'
         # Crear el mensaje
         mensaje = EmailMessage()
         mensaje['Subject'] = asunto
@@ -11,7 +12,6 @@ def enviar_correo(destinatario, asunto, cuerpo):
         mensaje.set_content(cuerpo)
         servidor_smtp='smtp.gmail.com'
         puerto=587
-        remitente='lucasalegre13@gmail.com',
         clave= "nphn znpk xzlg fgff"
 
         # Conexión con el servidor SMTP
