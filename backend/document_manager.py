@@ -35,7 +35,7 @@ class DocumentManager:
             callbacks=callbacks,
             base_url="http://host.docker.internal:11434",  # Connect to host machine Ollama
             temperature=temperature,  # Lower = more deterministic/cold
-            system="Eres un asistente que SIEMPRE responde en español. Sin importar el idioma de entrada, tu respuesta debe estar completamente en español. Eres un ingeniero químico de BASF especializado en seguridad industrial y alertas de incidentes."
+            system="Eres un asistente que SIEMPRE responde en español. Sin importar el idioma de entrada, tu respuesta debe estar completamente en español. Eres un ingeniero químico de COMPANY_NAME especializado en seguridad industrial y alertas de incidentes."
         )
         print(f"LLM initialized - Model: {model_name}, Temperature: {temperature}, Language: Español")
         return self.llm
@@ -97,9 +97,9 @@ class DocumentManager:
             return self.combined_vectorstore
         return self.documents.get(doc_name)
     
-    def create_basf_engineer_prompt(self):
-        """Create a custom prompt for BASF chemical engineer persona"""
-        template = """Eres un ingeniero químico experimentado de BASF especializado en alertas de incidentes y respuestas rápidas.
+    def create_company_name_engineer_prompt(self):
+        """Create a custom prompt for COMPANY_NAME chemical engineer persona"""
+        template = """Eres un ingeniero químico experimentado de COMPANY_NAME especializado en alertas de incidentes y respuestas rápidas.
 
 INSTRUCCIONES CRÍTICAS:
 - SIEMPRE responde en ESPAÑOL, sin excepción
@@ -116,7 +116,7 @@ Contexto de documentos:
 Alerta/Pregunta:
 {question}
 
-Respuesta breve y específica como ingeniero de BASF (en español):"""
+Respuesta breve y específica como ingeniero de COMPANY_NAME (en español):"""
 
         return PromptTemplate(
             template=template,
@@ -132,8 +132,8 @@ Respuesta breve y específica como ingeniero de BASF (en español):"""
         if vectorstore is None:
             raise ValueError(f"Document '{doc_name}' not found")
         
-        # Create custom prompt for BASF engineer persona
-        custom_prompt = self.create_basf_engineer_prompt()
+        # Create custom prompt for COMPANY_NAME engineer persona
+        custom_prompt = self.create_company_name_engineer_prompt()
             
         return RetrievalQA.from_chain_type(
             llm=self.llm,

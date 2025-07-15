@@ -156,7 +156,7 @@ async def generate_report(request: Request):
         # Generate filename with timestamp
         from datetime import datetime
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"BASF_Reporte_Incidente_{timestamp}.pdf"
+        filename = f"COMPANY_NAME_Reporte_Incidente_{timestamp}.pdf"
         
         print(f"✅ PDF generated successfully: {filename}")
         print(f"PDF size: {len(pdf_data)} bytes")

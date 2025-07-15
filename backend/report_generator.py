@@ -19,11 +19,11 @@ except locale.Error:
         # Fallback to default if Spanish locale not available
         pass
 
-# Colores corporativos BASF
-BASF_RED = HexColor('#C50022')
-BASF_DARK_BLUE = HexColor('#004A96')
-BASF_LIGHT_BLUE = HexColor('#21A0D2')
-BASF_GRAY = HexColor('#666666')
+# Colores corporativos COMPANY_NAME
+COMPANY_NAME_RED = HexColor('#C50022')
+COMPANY_NAME_DARK_BLUE = HexColor('#004A96')
+COMPANY_NAME_LIGHT_BLUE = HexColor('#21A0D2')
+COMPANY_NAME_GRAY = HexColor('#666666')
 
 class ReportGenerator:
     def __init__(self):
@@ -31,13 +31,13 @@ class ReportGenerator:
         self._create_custom_styles()
     
     def _create_custom_styles(self):
-        """Create custom styles for BASF branding"""
+        """Create custom styles for COMPANY_NAME branding"""
         # Main title style
         self.styles.add(ParagraphStyle(
-            name='BASFTitle',
+            name='COMPANY_NAMETitle',
             parent=self.styles['Title'],
             fontSize=24,
-            textColor=BASF_DARK_BLUE,
+            textColor=COMPANY_NAME_DARK_BLUE,
             fontName='Helvetica-Bold',
             spaceBefore=20,
             spaceAfter=30,
@@ -46,10 +46,10 @@ class ReportGenerator:
         
         # Subtitle style
         self.styles.add(ParagraphStyle(
-            name='BASFSubtitle',
+            name='COMPANY_NAMESubtitle',
             parent=self.styles['Heading1'],
             fontSize=16,
-            textColor=BASF_RED,
+            textColor=COMPANY_NAME_RED,
             fontName='Helvetica-Bold',
             spaceBefore=20,
             spaceAfter=12
@@ -57,22 +57,22 @@ class ReportGenerator:
         
         # Alert style
         self.styles.add(ParagraphStyle(
-            name='BASFAlert',
+            name='COMPANY_NAMEAlert',
             parent=self.styles['Normal'],
             fontSize=12,
-            textColor=BASF_RED,
+            textColor=COMPANY_NAME_RED,
             fontName='Helvetica-Bold',
             leftIndent=20,
             spaceBefore=10,
             spaceAfter=10,
-            borderColor=BASF_RED,
+            borderColor=COMPANY_NAME_RED,
             borderWidth=2,
             borderPadding=10
         ))
         
         # Normal content style
         self.styles.add(ParagraphStyle(
-            name='BASFContent',
+            name='COMPANY_NAMEContent',
             parent=self.styles['Normal'],
             fontSize=11,
             textColor=colors.black,
@@ -99,13 +99,13 @@ class ReportGenerator:
         story = []
         
         # Header
-        story.append(Paragraph("BASF - Reporte de Incidente de Seguridad", self.styles['BASFTitle']))
+        story.append(Paragraph("COMPANY_NAME - Reporte de Incidente de Seguridad", self.styles['COMPANY_NAMETitle']))
         story.append(Spacer(1, 12))
         
         # Metadata table
         metadata = [
             ['Fecha del Reporte:', datetime.now().strftime("%d/%m/%Y %H:%M")],
-            ['Sistema:', 'BASF Assistant - Gestión de Seguridad'],
+            ['Sistema:', 'COMPANY_NAME Assistant - Gestión de Seguridad'],
             ['Tipo:', 'Análisis de Incidente Químico']
         ]
         
@@ -138,12 +138,12 @@ class ReportGenerator:
                     assistant_response = msg['content']
             
             # Incident Description
-            story.append(Paragraph("1. DESCRIPCIÓN DEL INCIDENTE", self.styles['BASFSubtitle']))
+            story.append(Paragraph("1. DESCRIPCIÓN DEL INCIDENTE", self.styles['COMPANY_NAMESubtitle']))
             
             if user_query:
                 # Extract key information from the query
                 incident_summary = self._extract_incident_summary(user_query)
-                story.append(Paragraph(incident_summary, self.styles['BASFContent']))
+                story.append(Paragraph(incident_summary, self.styles['COMPANY_NAMEContent']))
             else:
                 # Default incident description when no specific query detected
                 current_datetime = self._format_datetime_spanish(datetime.now())
@@ -155,17 +155,17 @@ class ReportGenerator:
                 • <b>Violación de Seguridad:</b> Incumplimiento del protocolo de EPP (Equipo de Protección Personal)<br/>
                 • <b>Riesgo Detectado:</b> Exposición potencial a vapores químicos y riesgo de impacto en la cabeza
                 """
-                story.append(Paragraph(default_incident, self.styles['BASFContent']))
+                story.append(Paragraph(default_incident, self.styles['COMPANY_NAMEContent']))
             
             story.append(Spacer(1, 15))
             
             # Response and Recommendations
-            story.append(Paragraph("2. ANÁLISIS Y RECOMENDACIONES", self.styles['BASFSubtitle']))
+            story.append(Paragraph("2. ANÁLISIS Y RECOMENDACIONES", self.styles['COMPANY_NAMESubtitle']))
             
             if assistant_response:
                 # Clean and format the response
                 formatted_response = self._format_response(assistant_response)
-                story.append(Paragraph(formatted_response, self.styles['BASFContent']))
+                story.append(Paragraph(formatted_response, self.styles['COMPANY_NAMEContent']))
             else:
                 # Default analysis and recommendations when no specific response detected
                 default_analysis = """
@@ -185,17 +185,17 @@ class ReportGenerator:
                 • <b>Seguimiento:</b> Evaluación médica del empleado por posible exposición<br/>
                 • <b>Protocolo:</b> Revisión de procedimientos de seguridad en operaciones con MMA
                 """
-                story.append(Paragraph(default_analysis, self.styles['BASFContent']))
+                story.append(Paragraph(default_analysis, self.styles['COMPANY_NAMEContent']))
             
             story.append(Spacer(1, 15))
             
             # Summary Table
-            story.append(Paragraph("3. RESUMEN EJECUTIVO", self.styles['BASFSubtitle']))
+            story.append(Paragraph("3. RESUMEN EJECUTIVO", self.styles['COMPANY_NAMESubtitle']))
             
             summary_data = self._create_summary_table(user_query, assistant_response)
             summary_table = Table(summary_data, colWidths=[2*inch, 4*inch])
             summary_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (0, -1), BASF_LIGHT_BLUE),
+                ('BACKGROUND', (0, 0), (0, -1), COMPANY_NAME_LIGHT_BLUE),
                 ('TEXTCOLOR', (0, 0), (0, -1), colors.white),
                 ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
                 ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
@@ -209,7 +209,7 @@ class ReportGenerator:
         
         # Footer
         story.append(Spacer(1, 30))
-        footer_text = f"Generado automáticamente por BASF Assistant • {datetime.now().strftime('%d/%m/%Y %H:%M')} • Confidencial"
+        footer_text = f"Generado automáticamente por COMPANY_NAME Assistant • {datetime.now().strftime('%d/%m/%Y %H:%M')} • Confidencial"
         story.append(Paragraph(footer_text, self.styles['Normal']))
         
         # Build PDF

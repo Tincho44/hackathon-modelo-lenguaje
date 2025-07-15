@@ -116,12 +116,7 @@ const ChatMessage: React.FC<MessageProps> = ({ message, className = "" }) => {
       <div className="message-container">
         {isAssistant && (
           <div className="assistant-avatar">
-            <div className="basf-logo">
-              <span>BASF</span>
-              <div className="logo-squares">
-                <div className="square square-1"></div>
-                <div className="square square-2"></div>
-              </div>
+            <div className="company_name-logo">
             </div>
           </div>
         )}
@@ -129,7 +124,7 @@ const ChatMessage: React.FC<MessageProps> = ({ message, className = "" }) => {
         <div className="message-content">
           {isAssistant && (
             <div className="message-header">
-              <span className="sender-name">BASF Assistant</span>
+              <span className="sender-name">COMPANY_NAME Assistant</span>
               <span className="message-time">
                 {message.timestamp.toLocaleTimeString([], {
                   hour: "2-digit",

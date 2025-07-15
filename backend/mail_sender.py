@@ -57,12 +57,12 @@ html_template = """
     </p>
     
     <div class="button-container">
-      <p><strong>Acceda al chatbot de BASF Assistant para ver la respuesta:</strong></p>
-      <a href="{chatbot_url}" class="chatbot-button">Ver respuesta en BASF Assistant</a>
+      <p><strong>Acceda al chatbot de COMPANY_NAME Assistant para ver la respuesta:</strong></p>
+      <a href="{chatbot_url}" class="chatbot-button">Ver respuesta en COMPANY_NAME Assistant</a>
     </div>
     
     <div class="footer">
-      © 2025 BASF. Todos los derechos reservados.
+      © 2025 COMPANY_NAME. Todos los derechos reservados.
     </div>
   </div>
 </body>
@@ -77,8 +77,8 @@ def enviar_correo(query_text, chatbot_url):
         print(f"URL del chatbot: {chatbot_url}")
         
         remitente='lucasalegre13@gmail.com'
-        destinatario='poptnico75@gmail.com'
-        asunto='Alerta de incidente - BASF Assistant'
+        destinatario='ciarlohernan@gmail.com'
+        asunto='Alerta de incidente - COMPANY_NAME Assistant'
         
         # Crear el mensaje
         message = MIMEMultipart("alternative")        

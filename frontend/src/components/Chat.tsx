@@ -36,7 +36,7 @@ const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
       {
         id: "1",
         content:
-          "¡Hola! Soy el asistente de BASF. Estoy aquí para ayudarte con información sobre química, sostenibilidad, productos e innovaciones de BASF. ¿En qué puedo ayudarte hoy?",
+          "¡Hola! Soy el asistente de COMPANY_NAME. Estoy aquí para ayudarte con información sobre química, sostenibilidad, productos e innovaciones de COMPANY_NAME. ¿En qué puedo ayudarte hoy?",
         role: "assistant",
         timestamp: new Date(),
       },
@@ -98,7 +98,7 @@ const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
         .toLocaleString("es-ES")
         .replace(/[/,:]/g, "-")
         .replace(/\s/g, "_");
-      link.download = `BASF_Reporte_Incidente_${timestamp}.pdf`;
+      link.download = `COMPANY_NAME_Reporte_Incidente_${timestamp}.pdf`;
 
       // Trigger download
       document.body.appendChild(link);
@@ -214,29 +214,11 @@ const Chat: React.FC<BaseComponent> = ({ className = "" }) => {
     <div className={`chat-container ${className}`}>
       <div className="chat-header">
         <div className="header-content">
-          <div className="basf-brand">
-            <div className="basf-logo-header">
-              <span className="basf-text">BASF</span>
-              <div className="logo-squares-header">
-                <div className="square-header square-1"></div>
-                <div className="square-header square-2"></div>
-              </div>
+          <div className="company_name-brand">
+            <div className="company_name-logo-header">
+              <span className="company_name-text">COMPANY_NAME</span>
             </div>
-            <div className="brand-claim">We create chemistry</div>
-          </div>
-          <div className="header-actions">
-            <div className="microsoft-brand">
-              <div className="microsoft-logo">
-                <div className="microsoft-squares">
-                  <div className="ms-square ms-red"></div>
-                  <div className="ms-square ms-green"></div>
-                  <div className="ms-square ms-blue"></div>
-                  <div className="ms-square ms-yellow"></div>
-                </div>
-                <span className="microsoft-text">Microsoft</span>
-              </div>
-              <div className="hackathon-label">Hackathon Partner</div>
-            </div>
+            <div className="brand-claim">company slogan</div>
           </div>
         </div>
       </div>

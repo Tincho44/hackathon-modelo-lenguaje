@@ -28,7 +28,7 @@ export interface User {
   email: string;
 }
 
-// Chat types for BASF chatbot
+// Chat types for COMPANY_NAME chatbot
 export interface ChatMessage {
   id: string;
   content: string;

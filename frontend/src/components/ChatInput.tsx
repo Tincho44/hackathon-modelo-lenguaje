@@ -48,7 +48,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       </div>
       <div className="input-footer">
         <p className="disclaimer">
-          BASF Assistant puede cometer errores. Verifica información importante
+          El asistente puede cometer errores. Verifica información importante
           sobre productos químicos y soluciones.
         </p>
       </div>
